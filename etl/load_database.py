@@ -25,68 +25,106 @@ try:
     # Extract and Load into Database #
     # ============================== #
     
-    nfl.import_weekly_data(range(season_start, season_end+1)).\
-        to_sql('weekly', conn, index=False, if_exists='replace')
+    print("Working on Weekly Table...")
+    nfl.import_weekly_data(range(season_start, season_end+1)) \
+        .to_sql('weekly', conn, index=False, if_exists='replace')
 
-    nfl.import_seasonal_data(range(season_start,season_end+1)).\
-        to_sql('seasonal', conn, index=False, if_exists='replace')
+    print("Working on Seasonal Table...")
+    nfl.import_seasonal_data(range(season_start,season_end+1)) \
+        .to_sql('seasonal', conn, index=False, if_exists='replace')
 
-    nfl.import_team_desc().\
-        to_sql('team_descriptions', conn, index=False, if_exists='replace')
+    print("Working on Team Descriptions Table...")
+    nfl.import_team_desc() \
+        .to_sql('team_descriptions', conn, index=False, if_exists='replace')
 
-    nfl.import_rosters(range(season_start,season_end+1)).\
-        to_sql('rosters', conn, index=False, if_exists='replace')
+    print("Working on Rosters Table...")
+    nfl.import_rosters(range(season_start,season_end+1)) \
+        .to_sql('rosters', conn, index=False, if_exists='replace')
 
-    nfl.import_win_totals(range(season_start,season_end+1)).\
-        to_sql('win_totals', conn, index=False, if_exists='replace')
+    print("Working on Win Totals Table...")
+    nfl.import_win_totals(range(season_start,season_end+1)) \
+        .to_sql('win_totals', conn, index=False, if_exists='replace')
 
-    nfl.import_sc_lines(range(season_start,season_end+1)).\
-        to_sql('score_lines', conn, index=False, if_exists='replace')
+    print("Working on Score Lines Table...")
+    nfl.import_sc_lines(range(season_start,season_end+1)) \
+        .to_sql('score_lines', conn, index=False, if_exists='replace')
 
-    nfl.import_officials(range(season_start,season_end+1)).\
-        to_sql('officials', conn, index=False, if_exists='replace')
+    print("Working on Officials Table...")
+    nfl.import_officials(range(season_start,season_end+1)) \
+        .to_sql('officials', conn, index=False, if_exists='replace')
 
-    nfl.import_draft_picks(range(season_start,season_end+1)).\
-        to_sql('draft_picks', conn, index=False, if_exists='replace')
+    print("Working on Draft Picks Table...")
+    nfl.import_draft_picks(range(season_start,season_end+1)) \
+        .to_sql('draft_picks', conn, index=False, if_exists='replace')
 
-    nfl.import_draft_values().\
-        to_sql('draft_values', conn, index=False, if_exists='replace')
+    print("Working on Draft Values Table...")
+    nfl.import_draft_values() \
+        .to_sql('draft_values', conn, index=False, if_exists='replace')
 
-    nfl.import_combine_data(range(season_start,season_end+1)).\
-        to_sql('combine', conn, index=False, if_exists='replace')
+    print("Working on Combine Table...")
+    nfl.import_combine_data(range(season_start,season_end+1)) \
+        .to_sql('combine', conn, index=False, if_exists='replace')
 
-    nfl.import_schedules(range(season_start,season_end+1)).\
-        to_sql('schedules', conn, index=False, if_exists='replace')
+    print("Working on Schedules Table...")
+    nfl.import_schedules(range(season_start,season_end+1)) \
+        .to_sql('schedules', conn, index=False, if_exists='replace')
 
-    nfl.import_ids().\
-        to_sql('ids', conn, index=False, if_exists='replace')
+    print("Working on IDs Table...")
+    nfl.import_ids() \
+        .to_sql('ids', conn, index=False, if_exists='replace')
 
-    nfl.import_ngs_data('passing', range(season_start,season_end+1)).\
-        to_sql('ngs_pass', conn, index=False, if_exists='replace')
+    print("Working on NGS Passing Table...")
+    nfl.import_ngs_data('passing', range(season_start,season_end+1)) \
+        .to_sql('ngs_pass', conn, index=False, if_exists='replace')
 
-    nfl.import_ngs_data('receiving', range(season_start,season_end+1)).\
-        to_sql('ngs_rec', conn, index=False, if_exists='replace')
+    print("Working on NGS Receiving Table...")
+    nfl.import_ngs_data('receiving', range(season_start,season_end+1)) \
+        .to_sql('ngs_rec', conn, index=False, if_exists='replace')
 
-    nfl.import_ngs_data('rushing', range(season_start,season_end+1)).\
-        to_sql('ngs_rush', conn, index=False, if_exists='replace')
+    print("Working on NGS Rushing Table...")
+    nfl.import_ngs_data('rushing', range(season_start,season_end+1)) \
+        .to_sql('ngs_rush', conn, index=False, if_exists='replace')
 
-    nfl.import_injuries(range(2009,season_end+1)).\
-        to_sql('injuries', conn, index=False, if_exists='replace')
+    print("Working on Injuries Table...")
+    nfl.import_injuries(range(2009,season_end+1)) \
+        .to_sql('injuries', conn, index=False, if_exists='replace')
 
-    nfl.import_qbr(range(2006,season_end+1)).\
-        to_sql('qbr', conn, index=False, if_exists='replace')
+    print("Working on QBR Table...")
+    nfl.import_qbr(range(2006,season_end+1)) \
+        .to_sql('qbr', conn, index=False, if_exists='replace')
 
-    nfl.import_pfr('pass', range(2019,season_end+1)).\
-        to_sql('pfr_pass', conn, index=False, if_exists='replace')
+    print("Working on PFR Passing Table...")
+    nfl.import_pfr('pass', range(2019,season_end+1)) \
+        .to_sql('pfr_pass', conn, index=False, if_exists='replace')
 
-    nfl.import_pfr('rec', range(2019,season_end+1)).\
-        to_sql('pfr_rec', conn, index=False, if_exists='replace')
+    print("Working on PFR Receiving Table...")
+    nfl.import_pfr('rec', range(2019,season_end+1)) \
+        .to_sql('pfr_rec', conn, index=False, if_exists='replace')
 
-    nfl.import_pfr('rush', range(2019,season_end+1)).\
-        to_sql('pfr_rush', conn, index=False, if_exists='replace')
+    print("Working on PFR Rushing Table...")
+    nfl.import_pfr('rush', range(2019,season_end+1)) \
+        .to_sql('pfr_rush', conn, index=False, if_exists='replace')
 
-    nfl.import_snap_counts(range(2012,season_end+1)).\
-        to_sql('snap_counts', conn, index=False, if_exists='replace')
+    print("Working on Snap Counts Table...")
+    nfl.import_snap_counts(range(2012,season_end+1)) \
+        .to_sql('snap_counts', conn, index=False, if_exists='replace')
+
+    # ----------------- #
+    # Play-By-Play Data #
+    # ----------------- #
+    
+    print("Working on Play-By-Play table...")
+    
+    cols = [ 'game_id', 'season', 'week', 'season_type', 'home_team',
+             'away_team', 'posteam', 'defteam', 'touchdown', 'pass_touchdown',
+             'rush_touchdown', 'return_touchdown', 'extra_point_attempt',
+             'extra_point_result', 'two_point_attempt', 'field_goal_attempt',
+             'field_goal_result', 'two_point_conv_result', 'safety', 'success',
+             'td_team', 'posteam_score', 'defteam_score', 'posteam_score_post',
+             'defteam_score_post', 'desc']
+
+    pbp = nfl.import_pbp_data(range(1999, 2023), cols, downcast=True, cache=False, alt_path=None)
+    pbp[cols].to_sql('pbp', conn, index=False, if_exists='replace')
 
     # ============================== #
     #    Confirm Successful Load     #
