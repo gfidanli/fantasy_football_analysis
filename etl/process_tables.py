@@ -305,9 +305,57 @@ print("\nMissing Games: ")
 print(temp.query('pbp_score.isnull()')[['game_id', 'team', 'sched_score', 'pbp_score']] \
     .sort_values('game_id'))
 
-# Load Summary Table into Database
+# Load Temporary Table into Database
 print("\nSaving PBP Scoring Summary Table...")
 temp.to_sql('pbp_score_summary', conn, index=False, if_exists='replace')
+
+# ========================================= #
+# Play-By-Play Scoring Category Aggregation #
+# ========================================= #
+"""
+This query converts the schedules table from the game-level (wide) to
+game-team level (long).
+"""
+
+query = f"""
+WITH home_games AS (
+    SELECT 
+        game_id,
+        season,
+        week, 
+        home_team AS team
+    FROM schedules
+    WHERE season = {current_season}
+        AND week <= {latest_week}
+),
+away_games AS (
+    SELECT 
+        game_id,
+        season,
+        week, 
+        away_team AS team
+    FROM schedules
+    WHERE season = {current_season}
+        AND week <= {latest_week}
+),
+stacked AS (
+    SELECT *
+    FROM home_games
+    UNION
+    SELECT *
+    FROM away_games
+)
+SELECT *
+FROM stacked
+"""
+
+temp = pd.read_sql(query, conn)
+print(f"Number of records: {len(temp)}\n")
+print(temp.head())
+
+# Load Temporary Table into Database
+print("\nSaving Stacked Schedules Table...")
+temp.to_sql('stacked_schedules', conn, index=False, if_exists='replace')
 
 # ========================================= #
 #                  Finish                   #
