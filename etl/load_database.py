@@ -116,12 +116,13 @@ try:
     print("Working on Play-By-Play table...")
     
     cols = [ 'game_id', 'season', 'week', 'season_type', 'home_team',
-             'away_team', 'posteam', 'defteam', 'touchdown', 'pass_touchdown',
-             'rush_touchdown', 'return_touchdown', 'extra_point_attempt',
-             'extra_point_result', 'two_point_attempt', 'field_goal_attempt',
-             'field_goal_result', 'two_point_conv_result', 'safety', 'success',
-             'td_team', 'posteam_score', 'defteam_score', 'posteam_score_post',
-             'defteam_score_post', 'desc']
+             'away_team', 'posteam', 'defteam', 'game_half', 'quarter_end', 
+             'touchdown', 'pass_touchdown', 'rush_touchdown', 'return_touchdown', 
+             'extra_point_attempt', 'extra_point_result', 'two_point_attempt', 
+             'field_goal_attempt', 'field_goal_result', 'two_point_conv_result', 
+             'safety', 'success', 'td_team', 'posteam_score', 'defteam_score', 
+             'posteam_score_post', 'defteam_score_post', 'total_home_score', 
+             'total_away_score', 'away_score', 'home_score', 'desc']
 
     pbp = nfl.import_pbp_data(range(1999, 2023), cols, downcast=True, cache=False, alt_path=None)
     pbp[cols].to_sql('pbp', conn, index=False, if_exists='replace')
