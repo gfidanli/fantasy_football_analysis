@@ -3,13 +3,22 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import sqlite3
 import nfl_data_py as nfl
+import os
+import sys
 
 """
 Perform processing on tables to create intermediary tables for further analysis.
 """
 
+# Print the current working directory
+print(f"Current working directory: {os.getcwd()}")
+
+# Change current working directory to directory of this script
+os.chdir(sys.path[0])
+print(f"Current working directory: {os.getcwd()}")
+
 # Create database connection
-conn = sqlite3.connect('./data/db/database.db')
+conn = sqlite3.connect('../data/db/database.db')
 
 # Get parameters
 current_season = input("Enter current season: ")
@@ -18,6 +27,7 @@ latest_week = input("Enter last full week of games: ")
 # ========================================= #
 # Play-By-Play Scoring Category Aggregation #
 # ========================================= #
+
 """
 This query aggregates the Play-By-Play table to calculate the score for 
 each game-team combination and has a column for each scoring category.
@@ -25,6 +35,8 @@ each game-team combination and has a column for each scoring category.
 There is a join with the schedules table to check the manual calculation 
 for score and the number of game-team records that are missing (if any).
 """
+
+print("\nWorking on PBP Scoring Summary Table...")
 
 query = f"""
 WITH pbp_summary AS (
@@ -312,10 +324,13 @@ temp.to_sql('pbp_score_summary', conn, index=False, if_exists='replace')
 # ========================================= #
 # Play-By-Play Scoring Category Aggregation #
 # ========================================= #
+
 """
 This query converts the schedules table from the game-level (wide) to
 game-team level (long).
 """
+
+print("\nWorking on Stacked Schedules Table...")
 
 query = f"""
 WITH home_games AS (
@@ -356,6 +371,326 @@ print(temp.head())
 # Load Temporary Table into Database
 print("\nSaving Stacked Schedules Table...")
 temp.to_sql('stacked_schedules', conn, index=False, if_exists='replace')
+
+# ============================================= #
+# NFL Current Season Summary Export for Tableau #
+# ============================================= #
+
+"""
+This query takes various stats and combines them into a single table
+for use in creating the NFL Season Summary Dashboard hosted at 
+https://public.tableau.com/app/profile/sergio.fidanli/viz/2022NFLSeasonSummary/QBs?publish=yes
+
+The query was last updated 12/10/22 in the Day 47 notebook
+"""
+
+print("\nSaving NFL Current Season Summary Export for Tableau...")
+
+query = f"""
+WITH weekly_data AS (
+    SELECT
+        player_id,
+        player_display_name AS player_name,
+        position,
+        recent_team,
+        season,
+        week,
+        season_type,
+        sacks,
+        passing_air_yards AS pass_air_yds,
+        passing_yards_after_catch AS pass_yac,
+        passing_epa AS pass_epa,
+        passing_2pt_conversions AS pass_2pt_conv,
+        pacr,
+        rushing_epa AS rush_epa, 
+        receiving_air_yards AS rec_air_yds,
+        receiving_yards_after_catch AS rec_yac,
+        receiving_epa AS rec_epa,
+        racr,
+        target_share,
+        air_yards_share,
+        wopr,
+        fantasy_points AS fantasy_pts,
+        fantasy_points_ppr AS fantasy_pts_ppr
+    FROM weekly
+    WHERE season = {current_season}
+        AND week <= {latest_week}
+        AND position IN ('QB', 'WR', 'RB', 'TE')),
+pfr_pass_data AS (
+    SELECT
+        season,
+        week,
+        opponent,
+        pfr_player_name AS player_name,
+        passing_bad_throws,
+        passing_bad_throw_pct,
+        times_sacked,
+        times_blitzed,
+        times_hurried,
+        times_hit,
+        times_pressured,
+        times_pressured_pct,
+        ids.gsis_id
+    FROM pfr_pass
+    JOIN ids
+        ON ids.pfr_id = pfr_pass.pfr_player_id
+    WHERE season = {current_season}
+        AND week <= {latest_week}),
+pfr_rec_data AS (
+    SELECT
+        season,
+        week,
+        opponent,
+        pfr_player_name AS player_name,
+        receiving_broken_tackles,
+        receiving_drop,
+        receiving_drop_pct,
+        receiving_int,
+        receiving_rat,
+        ids.gsis_id
+    FROM pfr_rec
+    JOIN ids
+        ON ids.pfr_id = pfr_rec.pfr_player_id
+    WHERE season = {current_season}
+        AND week <= {latest_week}),
+pfr_rush_data AS (
+    SELECT
+        season,
+        week,
+        opponent,
+        pfr_player_name AS player_name,
+        carries,
+        rushing_yards_before_contact AS rush_yds_before_contact,
+        rushing_yards_before_contact_avg AS rush_yds_before_contact_avg,
+        rushing_yards_after_contact AS rush_yds_after_contact,
+        rushing_yards_after_contact_avg AS rush_yds_after_contact_avg,
+        rushing_broken_tackles AS rush_broken_tackles,
+        ids.gsis_id
+    FROM pfr_rush
+    JOIN ids
+        ON ids.pfr_id = pfr_rush.pfr_player_id
+    WHERE season = {current_season}
+        AND week <= {latest_week}),
+ngs_pass_data AS (
+    SELECT
+        season,
+        week,
+        player_display_name AS player_name,
+        attempts,
+        pass_yards,
+        pass_touchdowns AS pass_tds,
+        interceptions,
+        avg_time_to_throw,
+        avg_completed_air_yards,
+        avg_air_yards_differential,
+        aggressiveness,
+        max_completed_air_distance,
+        avg_air_yards_to_sticks,
+        passer_rating,
+        completions,
+        completion_percentage,
+        expected_completion_percentage,
+        completion_percentage_above_expectation,
+        avg_air_distance,
+        max_air_distance,
+        player_gsis_id
+    FROM ngs_pass
+    WHERE season = {current_season}
+        AND week BETWEEN 1 AND {latest_week}),
+ngs_rec_data AS (
+    SELECT
+        season,
+        week,
+        player_display_name AS player_name,
+        avg_cushion,
+        avg_separation,
+        avg_intended_air_yards,
+        percent_share_of_intended_air_yards,
+        receptions,
+        targets,
+        catch_percentage,
+        yards,
+        rec_touchdowns,
+        avg_yac,
+        avg_expected_yac,
+        avg_yac_above_expectation,
+        player_gsis_id
+    FROM ngs_rec
+    WHERE season = {current_season}
+        AND week BETWEEN 1 AND {latest_week}),
+ngs_rush_data AS (
+    SELECT
+        season,
+        week,
+        player_display_name AS player_name,
+        efficiency,
+        percent_attempts_gte_eight_defenders,
+        avg_time_to_los,
+        rush_attempts,
+        rush_yards,
+        expected_rush_yards,
+        rush_yards_over_expected,
+        avg_rush_yards,
+        rush_yards_over_expected_per_att,
+        rush_pct_over_expected,
+        rush_touchdowns,
+        player_gsis_id
+    FROM ngs_rush
+    WHERE season = {current_season}
+        AND week BETWEEN 1 AND {latest_week}),
+snap_counts_data AS (
+    SELECT
+        season,
+        week,
+        player AS player_name,
+        --opponent,
+        offense_snaps,
+        offense_pct AS offense_snaps_pct,
+        defense_snaps,
+        defense_pct AS defense_snaps_pct,
+        st_snaps,
+        st_pct AS st_snaps_pct,
+        ids.gsis_id
+    FROM snap_counts
+    JOIN ids
+        ON ids.pfr_id = snap_counts.pfr_player_id
+    WHERE season = {current_season}
+        AND week <= {latest_week}),
+joined_tables AS (
+    SELECT
+        player_id,
+        weekly_data.player_name,
+        weekly_data.position,
+        recent_team,
+        weekly_data.season,
+        weekly_data.week,
+        season_type,
+        sacks,
+        pass_air_yds,
+        pass_yac,
+        pass_epa,
+        pass_2pt_conv,
+        pacr,
+        rush_epa, 
+        rec_air_yds,
+        rec_yac,
+        rec_epa,
+        racr,
+        target_share,
+        air_yards_share,
+        wopr,
+        fantasy_pts,
+        fantasy_pts_ppr,
+        passing_bad_throws,
+        passing_bad_throw_pct,
+        times_sacked,
+        times_blitzed,
+        times_hurried,
+        times_hit,
+        times_pressured,
+        times_pressured_pct,
+        receiving_broken_tackles,
+        receiving_drop,
+        receiving_drop_pct,
+        receiving_int,
+        receiving_rat,
+        carries,
+        rush_yds_before_contact,
+        rush_yds_before_contact_avg,
+        rush_yds_after_contact,
+        rush_yds_after_contact_avg,
+        rush_broken_tackles,
+        attempts,
+        pass_yards,
+        pass_tds,
+        interceptions,
+        avg_time_to_throw,
+        avg_completed_air_yards,
+        avg_air_yards_differential,
+        aggressiveness,
+        max_completed_air_distance,
+        avg_air_yards_to_sticks,
+        passer_rating,
+        completions,
+        completion_percentage,
+        expected_completion_percentage,
+        completion_percentage_above_expectation,
+        avg_air_distance,
+        max_air_distance,
+        avg_cushion,
+        avg_separation,
+        avg_intended_air_yards,
+        percent_share_of_intended_air_yards,
+        receptions,
+        targets,
+        catch_percentage,
+        yards,
+        rec_touchdowns,
+        avg_yac,
+        avg_expected_yac,
+        avg_yac_above_expectation,
+        efficiency,
+        percent_attempts_gte_eight_defenders,
+        avg_time_to_los,
+        rush_attempts,
+        rush_yards,
+        expected_rush_yards,
+        rush_yards_over_expected,
+        avg_rush_yards,
+        rush_yards_over_expected_per_att,
+        rush_pct_over_expected,
+        rush_touchdowns,
+        offense_snaps,
+        offense_snaps_pct,
+        defense_snaps,
+        defense_snaps_pct,
+        st_snaps,
+        st_snaps_pct
+    FROM weekly_data
+    LEFT JOIN pfr_pass_data
+        ON pfr_pass_data.gsis_id = weekly_data.player_id
+            AND pfr_pass_data.season = weekly_data.season
+            AND pfr_pass_data.week = weekly_data.week
+    LEFT JOIN pfr_rec_data
+        ON pfr_rec_data.gsis_id = weekly_data.player_id
+            AND pfr_rec_data.season = weekly_data.season
+            AND pfr_rec_data.week = weekly_data.week
+    LEFT JOIN pfr_rush_data
+        ON pfr_rush_data.gsis_id = weekly_data.player_id
+            AND pfr_rush_data.season = weekly_data.season
+            AND pfr_rush_data.week = weekly_data.week
+    LEFT JOIN ngs_pass_data
+        ON ngs_pass_data.player_gsis_id = weekly_data.player_id
+            AND ngs_pass_data.season = weekly_data.season
+            AND ngs_pass_data.week = weekly_data.week
+    LEFT JOIN ngs_rec_data
+        ON ngs_rec_data.player_gsis_id = weekly_data.player_id
+            AND ngs_rec_data.season = weekly_data.season
+            AND ngs_rec_data.week = weekly_data.week
+    LEFT JOIN ngs_rush_data
+        ON ngs_rush_data.player_gsis_id = weekly_data.player_id
+            AND ngs_rush_data.season = weekly_data.season
+            AND ngs_rush_data.week = weekly_data.week
+    LEFT JOIN snap_counts_data
+        ON snap_counts_data.gsis_id = weekly_data.player_id
+            AND snap_counts_data.season = weekly_data.season
+            AND snap_counts_data.week = weekly_data.week
+)
+SELECT *
+FROM joined_tables
+"""
+
+temp = pd.read_sql(query, conn)
+print(f"Number of records: {len(temp)}\n")
+print(temp.head())
+
+# Load Temporary Table into Database
+print("\nSaving NFL Current Season Summary Export for Tableau...")
+temp.to_sql('current_season_summary_stats', conn, index=False, if_exists='replace')
+
+# Export to CSV for use in Tableau Public
+temp.to_csv(f"../data/output/for_tableau_all_data_week_{latest_week}.csv", index=False)
+print(f"\nSaved for_tableau_all_data_week_{latest_week}.csv")
 
 # ========================================= #
 #                  Finish                   #
