@@ -64,7 +64,9 @@ FROM (
 )
 ORDER BY team, week
 )
-SELECT  *
+SELECT  team
+       ,start_of_losing_streak
+       ,current_losing_streak
 FROM
 (
 	SELECT  team
@@ -80,19 +82,19 @@ ORDER BY max_streak DESC
 ```
 
 ## Result
-| team | start_of_losing_streak | current_losing_streak | max_streak |
-| :--- | :--------------------- | :-------------------- | :--------- |
-| HOU  | 6                      | 8                     | 8          |
-| CHI  | 8                      | 6                     | 6          |
-| DEN  | 9                      | 5                     | 5          |
-| NYG  | 11                     | 4                     | 4          |
-| ARI  | 11                     | 3                     | 3          |
-| IND  | 11                     | 3                     | 3          |
-| TEN  | 12                     | 3                     | 3          |
-| ATL  | 12                     | 2                     | 2          |
-| MIA  | 13                     | 2                     | 2          |
-| NO   | 12                     | 2                     | 2          |
-| NYJ  | 13                     | 2                     | 2          |
+| team | start_of_losing_streak | current_losing_streak |
+| :--- | :--------------------- | :-------------------- |
+| HOU  | 6                      | 8                     |
+| CHI  | 8                      | 6                     |
+| DEN  | 9                      | 5                     |
+| NYG  | 11                     | 4                     |
+| ARI  | 11                     | 3                     |
+| IND  | 11                     | 3                     |
+| TEN  | 12                     | 3                     |
+| ATL  | 12                     | 2                     |
+| MIA  | 13                     | 2                     |
+| NO   | 12                     | 2                     |
+| NYJ  | 13                     | 2                     |
 
 The Houston Texans are on an 8-game losing streak that started back on Week 6! 11 out of 32 teams are on at least a 2 game losing streak as of Week 14.  
 
@@ -101,7 +103,9 @@ To see the teams on current winning streaks, simply change a few variable names 
 
 ```sql
 -- Above is same as previous query
-SELECT  *
+SELECT  team
+       ,start_of_winning_streak
+       ,current_winning_streak
 FROM
 (
 	SELECT  team
@@ -117,16 +121,16 @@ ORDER BY max_streak DESC
 ```
 The result set is:
 
-| team | start_of_winning_streak | current_winning_streak | max_streak |
-| :--- | :---------------------- | :--------------------- | :--------- |
-| SF   | 8                       | 6                      | 6          |
-| CIN  | 9                       | 5                      | 5          |
-| BUF  | 11                      | 4                      | 4          |
-| DAL  | 11                      | 4                      | 4          |
-| PHI  | 11                      | 4                      | 4          |
-| WAS  | 10                      | 4                      | 4          |
-| BAL  | 13                      | 2                      | 2          |
-| CAR  | 12                      | 2                      | 2          |
-| DET  | 13                      | 2                      | 2          |
+| team | start_of_winning_streak | current_winning_streak |
+| :--- | :---------------------- | :--------------------- |
+| SF   | 8                       | 6                      |
+| CIN  | 9                       | 5                      |
+| BUF  | 11                      | 4                      |
+| DAL  | 11                      | 4                      |
+| PHI  | 11                      | 4                      |
+| WAS  | 10                      | 4                      |
+| BAL  | 13                      | 2                      |
+| CAR  | 12                      | 2                      |
+| DET  | 13                      | 2                      |
 
 San Francisco is the hottest team in the league right now and currently on a 6-game win streak. The Bengals are on their tail with a win streak of 5 games.
