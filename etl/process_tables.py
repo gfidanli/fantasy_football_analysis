@@ -321,6 +321,70 @@ print(temp.query('pbp_score.isnull()')[['game_id', 'team', 'sched_score', 'pbp_s
 print("\nSaving PBP Scoring Summary Table...")
 temp.to_sql('pbp_score_summary', conn, index=False, if_exists='replace')
 
+# =========================== #
+# Red Zone Run and Pass Plays #
+# =========================== #
+
+"""
+This query takes the play-by-play data and filters for Red Zone (<= 20 yards till goal)
+run or pass plays. Filters out 2-PT Conversion attempts. 
+Table will be at team-play-player_name level.
+
+NULL values for player_name are plays that did not produce any yards: 
+interceptions, sacks, fumbles, etc.
+
+TD conversion for each player is calculated by aggregating the number of Red Zone
+plays for each player and dividing by number of those plays that resulted in a TD.
+"""
+
+print("\nWorking on Red Zone Run and Pass Plays Table...")
+
+query = f"""
+WITH data_table AS
+(
+	SELECT
+        *,
+        CASE 
+            WHEN play_type = 'run' THEN rusher_player_id
+            ELSE receiver_player_id 
+        END AS player_id
+    FROM pbp
+    WHERE season = {current_season}
+        AND week <= {latest_week}
+        AND yardline_100 <= 20
+        AND play_type IN ('run', 'pass')
+        AND two_point_attempt = 0
+)
+SELECT  *
+        ,ROUND((1.0 * count_td / num_plays) * 100,2) AS td_pct
+FROM
+(
+    SELECT  posteam                                   AS team
+            ,play_type
+            ,player_name
+            ,COUNT(*)                                  AS num_plays
+            ,COUNT(CASE WHEN touchdown = 1 THEN 1 END) AS count_td
+    FROM data_table
+    LEFT JOIN
+    ( -- This will ensure that there are no duplicate rows
+        SELECT  DISTINCT player_id
+                ,player_display_name AS player_name
+        FROM weekly
+    ) AS weekly_temp
+    ON weekly_temp.player_id = data_table.player_id
+    GROUP BY  team
+                ,play_type
+                ,player_name
+)
+"""
+temp = pd.read_sql(query, conn)
+print(f"Number of records: {len(temp)}\n")
+print(temp.head())
+
+# Load Temporary Table into Database
+print("\nRed Zone Run and Pass Plays Table...")
+temp.to_sql('red_zone_td_efficiency', conn, index=False, if_exists='replace')
+
 # ========================================= #
 # Convert Schedules Table from Wide to Long #
 # ========================================= #
