@@ -322,7 +322,7 @@ print("\nSaving PBP Scoring Summary Table...")
 temp.to_sql('pbp_score_summary', conn, index=False, if_exists='replace')
 
 # ========================================= #
-# Play-By-Play Scoring Category Aggregation #
+# Convert Schedules Table from Wide to Long #
 # ========================================= #
 
 """
