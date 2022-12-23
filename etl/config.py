@@ -1,3 +1,7 @@
+"""
+Set parameters for API calls and SQL queries used for table transformations
+"""
+
 season_start = 1999
 season_end = 2022
 
