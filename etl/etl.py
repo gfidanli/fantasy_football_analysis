@@ -3,7 +3,9 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import sqlite3
 import nfl_data_py as nfl
+
 import config
+import transformations
 
 """
 Use nfl_data_py package to extract NFL historical data.
@@ -105,6 +107,31 @@ try:
     print("Working on Snap Counts Table...")
     nfl.import_snap_counts(config.snap_counts_config['date_range']) \
         .to_sql(config.snap_counts_config['name'], conn, index=False, if_exists='replace')
+
+    print("Working on Play-By-Play table...")
+    pbp = nfl.import_pbp_data(config.play_by_play_config['date_range'], config.play_by_play_config['cols'], downcast=True, cache=False, alt_path=None)
+    pbp[config.play_by_play_config['cols']].to_sql(config.play_by_play_config['name'], conn, index=False, if_exists='replace')
+
+    # ===================== #
+    # Table Transformations #
+    # ===================== #
+
+    print("\nWorking on PBP Scoring Summary Table...")
+    temp = transformations.pbp_scoring_summary()
+
+    print(f"Number of records: {len(temp)}")
+
+    print("\nMismatched Scores: ")
+    temp.query('sched_score != pbp_score and ~pbp_score.isnull()')
+
+    print("\nMissing Games: ")
+    print(temp.query('pbp_score.isnull()')[['game_id', 'team', 'sched_score', 'pbp_score']] \
+        .sort_values('game_id'))
+
+    # Load Temporary Table into Database
+    print("\nSaving PBP Scoring Summary Table...")
+    temp.to_sql('pbp_score_summary', conn, index=False, if_exists='replace')
+
 
     # ============================== #
     #    Confirm Successful Load     #
