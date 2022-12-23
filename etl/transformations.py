@@ -1,10 +1,7 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
-import sqlite3
-import nfl_data_py as nfl
-import os
-import sys
+
 import config
 
 """
