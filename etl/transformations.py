@@ -291,7 +291,8 @@ def red_zone_efficiency(conn):
     """
     This query takes the play-by-play data and filters for Red Zone (<= 20 yards till goal)
     run or pass plays. Filters out 2-PT Conversion attempts. 
-    Table will be at team-play-player_name level.
+    Table will be at team-play-week-player_name level so that it can be aggregated
+    on a weekly basis in order to analyze both long-term and short-term trends.
 
     NULL values for player_name are plays that did not produce any yards: 
     interceptions, sacks, fumbles, etc.
@@ -301,42 +302,54 @@ def red_zone_efficiency(conn):
     """
 
     query = f"""
-    WITH data_table AS
-    (
+    WITH data_table AS (
         SELECT
             *,
-            CASE 
-                WHEN play_type = 'run' THEN rusher_player_id
-                ELSE receiver_player_id 
-            END AS player_id
-        FROM pbp
-        WHERE season = {config.current_season}
-            AND week <= {config.latest_week}
-            AND yardline_100 <= 20
-            AND play_type IN ('run', 'pass')
-            AND two_point_attempt = 0
+            COUNT(*) AS num_plays,
+            COUNT(CASE WHEN touchdown = 1 THEN 1 END) AS count_td
+        FROM
+        (
+            SELECT
+                week,
+                posteam AS team,
+                play_type,
+                CASE
+                    WHEN play_type = 'run' THEN rusher_player_id
+                    ELSE receiver_player_id
+                END AS player_id,
+                touchdown
+            FROM pbp
+            WHERE season = 2022
+                AND week <= 15
+                AND yardline_100 <= 20
+                AND play_type IN ('run', 'pass')
+                AND two_point_attempt = 0
+        )
+        GROUP BY
+            team,
+            play_type,
+            player_id,
+            week
     )
-    SELECT  *
-            ,ROUND((1.0 * count_td / num_plays) * 100,2) AS td_pct
-    FROM
+    SELECT
+        week,
+        team,
+        play_type,
+        player_name,
+        num_plays,
+        count_td
+    FROM data_table
+    LEFT JOIN
     (
-        SELECT  posteam                                   AS team
-                ,play_type
-                ,player_name
-                ,COUNT(*)                                  AS num_plays
-                ,COUNT(CASE WHEN touchdown = 1 THEN 1 END) AS count_td
-        FROM data_table
-        LEFT JOIN
-        ( -- This will ensure that there are no duplicate rows
-            SELECT  DISTINCT player_id
-                    ,player_display_name AS player_name
-            FROM weekly
-        ) AS weekly_temp
-        ON weekly_temp.player_id = data_table.player_id
-        GROUP BY  team
-                    ,play_type
-                    ,player_name
-    )
+        -- This will ensure that there are no duplicate rows
+        SELECT DISTINCT 
+            player_id,
+            player_display_name AS player_name
+        FROM weekly
+    ) AS weekly_temp
+    ON weekly_temp.player_id = data_table.player_id
+    -- only bring in plays that were successful (did not have to score a TD)
+    WHERE player_name IS NOT NULL 
     """
     
     return pd.read_sql(query, conn)
