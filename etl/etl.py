@@ -85,7 +85,7 @@ def main():
         # NFL Current Season Summary Export for Tableau #
         # --------------------------------------------- #
 
-        print("\nSaving NFL Current Season Summary Export for Tableau...")
+        print("\Working on NFL Current Season Summary Export for Tableau...")
         temp = transformations.tableau_export(conn)
 
         print(f"Number of records: {len(temp)}\n")
@@ -99,6 +99,20 @@ def main():
         temp.to_csv(f"./data/output/for_tableau_all_data_week_{config.latest_week}.csv", index=False)
         print(f"\nSaved for_tableau_all_data_week_{config.latest_week}.csv")
 
+        # ------------------------------- #
+        # Fantasy Points Allowed Rankings #
+        # ------------------------------- #
+
+        print("\nWorking on Fantasy Points Allowed Table...")
+        temp = transformations.fantasy_pts_allowed(conn)
+
+        print(f"Number of records: {len(temp)}\n")
+        print(temp.head())
+
+        # Load Temporary Table into Database
+        print("\nSaving Fantasy Points Allowed Table...")
+        temp.to_sql('fantasy_pts_allowed', conn, index=False, if_exists='replace')
+        
         # ============================== #
         #    Confirm Successful Load     #
         # ============================== #

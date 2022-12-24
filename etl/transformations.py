@@ -702,3 +702,96 @@ def tableau_export(conn):
     """
 
     return pd.read_sql(query, conn)
+
+
+def fantasy_pts_allowed(conn):
+    """
+    This query calculates fantasy points allowed by each team for the following
+    positions: QB, RB, WR, and TE.
+
+    The lower the rank the more points that team allows to the position.
+    """
+
+    query = f"""
+    WITH fantasy_totals_by_team AS (
+        -- Get the total fantasy points scored per team, per position, per week
+        SELECT
+            recent_team,
+            position,
+            week,
+            ROUND(SUM(fantasy_points), 2) as tot_pts,
+            ROUND(SUM(fantasy_points_ppr), 2) as tot_pts_ppr
+        FROM weekly
+        WHERE season = {config.current_season}
+            AND week <= {config.latest_week}
+            AND position in ('QB', 'RB', 'WR', 'TE')
+        GROUP BY recent_team, position, week),
+    -- Get schedule info
+        home_games AS (
+            SELECT 
+                game_id,
+                season,
+                week, 
+                home_team AS team,
+                away_team AS opp_team
+            FROM schedules
+            WHERE season = {config.current_season}
+                AND week <= {config.latest_week}
+        ),
+        away_games AS (
+        SELECT 
+                game_id,
+                season,
+                week, 
+                away_team AS team,
+                home_team AS opp_team
+            FROM schedules
+            WHERE season = {config.current_season}
+                AND week <= {config.latest_week}
+        ),
+        stacked AS (
+            SELECT *
+            FROM home_games
+            UNION
+            SELECT *
+            FROM away_games
+        ),
+    -- Join the two temp datasets
+    -- Every team will have it's total fantasy points per team appended to it
+    joined_data AS (
+        SELECT
+            game_id,
+            season,
+            stacked.week,
+            team,
+            opp_team,
+            position,
+            tot_pts,
+            tot_pts_ppr
+        FROM stacked
+        LEFT JOIN fantasy_totals_by_team
+            ON fantasy_totals_by_team.recent_team = stacked.team
+            AND fantasy_totals_by_team.week = stacked.week),
+    -- Only use opp_team to get the points scored scored against
+    total_pts_scored_against AS (
+        SELECT
+            opp_team,
+            position,
+            SUM(tot_pts) AS tot_pts_scored_against,
+            SUM(tot_pts_ppr) AS tot_pts_ppr_scored_against
+        FROM joined_data
+        GROUP BY opp_team, position),
+    -- Utilize RANK() to get the season-level rankings
+    season_rankings AS (
+        SELECT
+            opp_team AS team,
+            position,
+            RANK() OVER(PARTITION BY position ORDER BY tot_pts_scored_against DESC) AS r_pts_scored_against,
+            RANK() OVER(PARTITION BY position ORDER BY tot_pts_ppr_scored_against DESC) AS r_pts_ppr_scored_against
+        FROM total_pts_scored_against
+        ORDER BY position, r_pts_ppr_scored_against)
+    SELECT *
+    FROM season_rankings
+    """
+
+    return pd.read_sql(query, conn)
