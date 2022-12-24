@@ -52,7 +52,8 @@ LEFT JOIN
 	FROM weekly
 ) AS weekly_temp
 ON weekly_temp.player_id = data_table.player_id
-WHERE player_name IS NOT NULL -- only bring in plays that wre successful (did not have to score a TD)
+-- only bring in plays that were successful (did not have to score a TD)
+WHERE player_name IS NOT NULL
 ```
 
 Now I `JOIN` the two tables together, utilizing a `CTE` to pre-process the offensive snaps table before the join...
