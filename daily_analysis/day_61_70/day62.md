@@ -118,7 +118,7 @@ FROM summary
 
 Fun Facts (since 1999...):
 1. For the teams with 3 games played, Dallas is the only one to lose every game. For the teams with 2 games played, both Minnesota and Vegas have 2 losses.
-2. Kansas City is the only undefeated team (only 2 games played though)
+2. Kansas City is the only undefeated team (at least 2 games played)
 3. Tennessee owns the highest margin of victory – 31 pts over Dallas in 2000.
 4. Houston owns the worst defeat – a loss by 28 points to Pittsburgh in 2017
 5. No game went to Overtime
