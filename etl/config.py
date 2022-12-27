@@ -6,7 +6,7 @@ season_start = 1999
 season_end = 2022
 
 current_season = 2022
-latest_week = 15
+latest_week = 16
 
 weekly_config = {
     'name':'weekly',
