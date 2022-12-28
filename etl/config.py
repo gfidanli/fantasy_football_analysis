@@ -126,7 +126,7 @@ play_by_play_config = {
              'two_point_attempt', 'two_point_conv_result', 'safety', 'success', 'td_team', 
              'posteam_score', 'defteam_score', 'posteam_score_post', 'defteam_score_post', 
              'total_home_score', 'total_away_score', 'away_score', 'home_score', 'desc', 
-             'yardline_100', 'goal_to_go', 'yrdln', 'ydstogo', 'play_type', 'penalty', 
-             'receiver_player_id', 'receiver_player_name', 'receiving_yards', 'rusher_player_id', 
-             'rusher_player_name', 'rushing_yards']
+             'yardline_100', 'goal_to_go', 'yrdln', 'ydstogo', 'ydsnet', 'yards_gained', 
+             'play_type', 'penalty', 'receiver_player_id', 'receiver_player_name', 'receiving_yards', 
+             'rusher_player_id', 'rusher_player_name', 'rushing_yards']
 }
