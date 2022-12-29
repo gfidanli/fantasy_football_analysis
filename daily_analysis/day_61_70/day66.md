@@ -1,5 +1,9 @@
 # Day 66
-It's another Thursday Night Football game so I'll be providing the usual analysis in the form of offensive snap percentage and Red Zone efficiency. This post will be in a similar format to `day63.md` where I added an additional table, looking at average TDs allowed (by type) and average passing yards allowed by team and their respective rankings.
+It's another Thursday Night Football game so I'll be providing the usual analysis in the form of offensive snap percentage and Red Zone efficiency. This post will be in a similar format to `day63.md` where I added an additional table, looking at average TDs allowed (by type) and average passing yards allowed by team and their respective rankings.  
+
+Since I like to add something new each time I do one of these kinds of analysis, I'll add both rush share and target share to the player summary table. This should help to come to a better conclusion of who is more likely to get the ball in scoring situations (and who is more likely to score overall). More opportunities = more fantasy points. 
+
+**Note**: Rush share and target share is calculated on a full game basis, not just Red Zone plays.
 
 I'll to limit the analysis to the last 4 weeks of data (Weeks 13-16) to make sure that I'm looking at recent trends.
 
