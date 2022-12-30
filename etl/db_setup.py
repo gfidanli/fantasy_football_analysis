@@ -6,6 +6,11 @@ import nfl_data_py as nfl
 import config
 
 def initial_db_setup(conn):
+    """
+    Function uses nfl_data_py package to extract data from NFL data sourced from 
+    nflfastR, nfldata, dynastyprocess, and Draft Scout. These tables are used as
+    the basis for table transformations.
+    """
 
     print("Working on Weekly Table...")
     nfl.import_weekly_data(config.weekly_config['date_range']) \

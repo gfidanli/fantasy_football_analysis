@@ -1,12 +1,12 @@
+"""
+Perform processing on tables to create intermediary tables for further analysis.
+"""
+
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 
 import config
-
-"""
-Perform processing on tables to create intermediary tables for further analysis.
-"""
 
 def pbp_scoring_summary(conn):
     """

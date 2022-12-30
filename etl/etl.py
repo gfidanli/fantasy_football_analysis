@@ -7,18 +7,13 @@ import config
 import db_setup
 import transformations
 
-"""
-Use nfl_data_py package to extract NFL historical data.
-In the various import functions, years have been specified to
-return the earliest possible data.
-
-Descriptions of the various datasets can be found in the project README.
-"""
-
 # Create database connection
 conn = sqlite3.connect('./data/db/database_test.db')
 
 def main():
+    """
+    Run ETL process using functions contained in db_setup.py and transformations.py
+    """
 
     try:
 
