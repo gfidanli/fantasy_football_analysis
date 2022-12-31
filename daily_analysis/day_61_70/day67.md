@@ -1,1 +1,0 @@
-Update plot code to be more pythonic. Utilize dictionary comprehension
