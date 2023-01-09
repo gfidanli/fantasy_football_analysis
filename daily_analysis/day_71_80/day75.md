@@ -43,6 +43,6 @@ GROUP BY  season;
 | 2021   | 16   | REG       | DAL       | WAS       | 42.0       | home win |
 | 2022   | 11   | REG       | MIN       | DAL       | 37.0       | away win |
 
-Biggest blowout in the last 23 years was when the New England Patriots beat the Tennessee Titans by 59 points at home.  
+Biggest blowout in the last 23 years ocurred in 2009 when the New England Patriots beat the Tennessee Titans by 59 points at home.  
 
 Not surprisingly, almost all of these blowouts have been by home teams which makes sense.
